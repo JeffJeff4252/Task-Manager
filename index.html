@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Productivity Task Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+  --bg:#f4f6fa; --card:#fff; --text:#222; --accent:#4f46e5;
+}
+.dark{
+  --bg:#0f172a; --card:#1e293b; --text:#e5e7eb; --accent:#818cf8;
+}
+body{
+  margin:0; font-family:system-ui; background:var(--bg); color:var(--text);
+}
+.container{max-width:1100px;margin:auto;padding:20px}
+header{display:flex;justify-content:space-between;align-items:center}
+button,input,select{
+  padding:8px;border-radius:6px;border:1px solid #ccc
+}
+button{cursor:pointer;background:var(--accent);color:white;border:none}
+.card{
+  background:var(--card); padding:15px; border-radius:12px;
+  box-shadow:0 4px 10px rgba(0,0,0,.05); margin:10px 0;
+}
+.grid{display:grid;gap:15px}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.task{display:flex;justify-content:space-between;align-items:center}
+.task.done{text-decoration:line-through;opacity:.6}
+.heatmap{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.day{height:22px;border-radius:4px}
+small{opacity:.7}
+</style>
+</head>
+
+<body>
+<div class="container">
+<header>
+  <h2>📋 Task Manager</h2>
+  <button onclick="toggleDark()">🌙</button>
+</header>
+
+<div class="card">
+  <input id="title" placeholder="Task title">
+  <input type="date" id="due">
+  <select id="cat">
+    <option>General</option><option>Work</option><option>Study</option>
+  </select>
+  <button onclick="addTask()">Add</button>
+</div>
+
+<div class="card">
+  <button onclick="filter='all';render()">All</button>
+  <button onclick="filter='today';render()">Today</button>
+  <button onclick="filter='overdue';render()">Overdue</button>
+  <button onclick="filter='done';render()">Completed</button>
+</div>
+
+<div id="tasks"></div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Status</h3>
+    <canvas id="chart"></canvas>
+  </div>
+  <div class="card">
+    <h3>Weekly Productivity</h3>
+    <canvas id="weeklyChart"></canvas>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Trend & Average</h3>
+    <canvas id="trendChart"></canvas>
+  </div>
+  <div class="card">
+    <h3>Monthly Heatmap</h3>
+    <div id="heatmap" class="heatmap"></div>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>🔥 Streak</h3>
+    <h1 id="streak">0</h1>
+  </div>
+  <div class="card">
+    <h3>⏱ Avg Hours to Complete</h3>
+    <h1 id="avgTime">0</h1>
+  </div>
+</div>
+
+<div class="card">
+  <button onclick="exportTasks()">Export</button>
+  <input type="file" onchange="importTasks(this)">
+  <button onclick="notify()">Enable Notifications</button>
+</div>
+</div>
+
+<script>
+let tasks=JSON.parse(localStorage.getItem('tasks')||'[]');
+let filter='all', chart, weeklyChart, trendChart;
+
+if(localStorage.dark) document.body.classList.add('dark');
+
+function toggleDark(){
+  document.body.classList.toggle('dark');
+  localStorage.dark=document.body.classList.contains('dark');
+}
+
+function addTask(){
+  const t=title.value.trim();
+  if(!t) return;
+  tasks.push({
+    id:Date.now(),title:t,done:false,
+    due:due.value,cat:cat.value,
+    created:Date.now(),completed:null
+  });
+  save();
+}
+
+function save(){localStorage.tasks=JSON.stringify(tasks);render();}
+
+function render(){
+  const now=new Date().toISOString().slice(0,10);
+  tasksEl.innerHTML='';
+  let list=tasks.filter(t=>{
+    if(filter==='today') return t.due===now && !t.done;
+    if(filter==='overdue') return t.due<now && !t.done;
+    if(filter==='done') return t.done;
+    return true;
+  });
+  list.forEach(t=>{
+    const d=document.createElement('div');
+    d.className='card task'+(t.done?' done':'');
+    d.innerHTML=`${t.title} <small>${t.cat}</small>`;
+    d.onclick=()=>{
+      t.done=!t.done;
+      t.completed=t.done?Date.now():null;
+      save();
+    };
+    tasksEl.appendChild(d);
+  });
+  updateCharts();
+}
+
+function updateCharts(){
+  const done=tasks.filter(t=>t.done);
+  const pending=tasks.length-done.length;
+
+  chart?.destroy();
+  chart=new Chart(chartEl,{type:'doughnut',
+    data:{labels:['Done','Pending'],datasets:[{data:[done.length,pending]}]}
+  });
+
+  const days=[...Array(7)].map((_,i)=>{
+    const d=new Date();d.setDate(d.getDate()-6+i);
+    return d.toISOString().slice(0,10);
+  });
+
+  weeklyChart?.destroy();
+  weeklyChart=new Chart(weeklyChartEl,{type:'bar',
+    data:{labels:days, datasets:[{
+      label:'Completed',
+      data:days.map(d=>done.filter(t=>t.completed&&new Date(t.completed).toISOString().slice(0,10)===d).length)
+    }]}
+  });
+
+  trendChart?.destroy();
+  const vals=days.map(d=>done.filter(t=>new Date(t.completed).toISOString().slice(0,10)===d).length);
+  const avg=vals.reduce((a,b)=>a+b,0)/vals.length;
+  trendChart=new Chart(trendChartEl,{type:'line',
+    data:{labels:days,datasets:[
+      {label:'Daily',data:vals},
+      {label:'Average',data:vals.map(()=>avg),borderDash:[5,5]}
+    ]}
+  });
+
+  heatmap.innerHTML='';
+  [...Array(30)].forEach((_,i)=>{
+    const d=new Date();d.setDate(d.getDate()-i);
+    const key=d.toISOString().slice(0,10);
+    const c=done.filter(t=>new Date(t.completed).toISOString().slice(0,10)===key).length;
+    const cell=document.createElement('div');
+    cell.className='day';
+    cell.style.background=`rgba(79,70,229,${Math.min(c/5,1)})`;
+    cell.title=`${key}: ${c}`;
+    heatmap.appendChild(cell);
+  });
+
+  streakEl.textContent=calcStreak(done);
+  avgTimeEl.textContent=avgHours(done);
+}
+
+function calcStreak(done){
+  let s=0;
+  for(let i=0;;i++){
+    const d=new Date();d.setDate(d.getDate()-i);
+    if(done.some(t=>new Date(t.completed).toDateString()===d.toDateString())) s++;
+    else break;
+  }
+  return s;
+}
+
+function avgHours(done){
+  if(!done.length) return 0;
+  return Math.round(done.reduce((a,t)=>a+(t.completed-t.created),0)/done.length/36e5);
+}
+
+function exportTasks(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(tasks)],{type:'application/json'}));
+  a.download='tasks.json'; a.click();
+}
+
+function importTasks(f){
+  const r=new FileReader();
+  r.onload=e=>{tasks=JSON.parse(e.target.result);save();};
+  r.readAsText(f.files[0]);
+}
+
+function notify(){
+  Notification.requestPermission();
+}
+
+const tasksEl=document.getElementById('tasks');
+const chartEl=document.getElementById('chart');
+const weeklyChartEl=document.getElementById('weeklyChart');
+const trendChartEl=document.getElementById('trendChart');
+const heatmap=document.getElementById('heatmap');
+const streakEl=document.getElementById('streak');
+const avgTimeEl=document.getElementById('avgTime');
+
+render();
+</script>
+</body>
+</html>
