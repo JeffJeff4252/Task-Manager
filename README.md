@@ -9,7 +9,7 @@ Designed to run perfectly on **GitHub Pages**.
 ## 🚀 Live Demo
 
 After deployment:
-https://<your-username>.github.io/<repository-name>/
+[https://<your-username>.github.io/<repository-name>/](https://jeffjeff4252.github.io/Task-Manager/)
 
 
 ---
