@@ -1,4 +1,4 @@
-# 📋 Productivity Task Manager
+# Productivity Task Manager
 
 A modern, fully client-side **task manager and productivity analytics dashboard** built with **plain HTML, CSS, and JavaScript**.  
 No backend. No frameworks. No build tools.  
@@ -6,7 +6,7 @@ Designed to run perfectly on **GitHub Pages**.
 
 ---
 
-## 🚀 Live Demo
+## Live Demo
 
 After deployment:
 [https://<your-username>.github.io/<repository-name>/](https://jeffjeff4252.github.io/Task-Manager/)
@@ -14,9 +14,9 @@ After deployment:
 
 ---
 
-## ✨ Features
+## Features
 
-### ✅ Task Management
+### Task Management
 - Create, complete, and manage tasks
 - Due dates and categories
 - Filters:
@@ -28,7 +28,7 @@ After deployment:
 
 ---
 
-### 📊 Productivity Analytics
+### Productivity Analytics
 - **Completion Status Chart**
   - Completed vs Pending tasks
 - **Weekly Productivity Chart**
@@ -46,14 +46,14 @@ All analytics update automatically when tasks change.
 
 ---
 
-### 🌙 User Experience
+### User Experience
 - Dark mode toggle (saved across sessions)
 - Responsive layout (desktop & mobile)
 - Clean, card-based UI
 
 ---
 
-### 🔔 Browser Notifications
+### Browser Notifications
 - Optional notification permissions
 - Alerts for tasks due today
 - Uses native browser Notifications API
@@ -61,14 +61,14 @@ All analytics update automatically when tasks change.
 
 ---
 
-### 📤 Data Management
+### Data Management
 - Export all tasks to a JSON file
 - Import tasks from a JSON backup
 - Useful for backups and migrations
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **HTML5**
 - **CSS3**
@@ -82,7 +82,7 @@ All analytics update automatically when tasks change.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 task-manager/
 ├── index.html
@@ -93,8 +93,9 @@ Only **one HTML file** is required to run the app.
 
 ---
 
-## 🌍 Deploying to GitHub Pages
+## Deploying to GitHub Pages
 
+For those who want it on their repository:
 1. Create a new GitHub repository
 2. Upload:
    - `index.html`
@@ -105,11 +106,11 @@ Only **one HTML file** is required to run the app.
    - Folder: `/root`
 5. Save and wait ~30 seconds
 
-Your site will be live 🎉
+Your site will be live 
 
 ---
 
-## 🧠 How Analytics Work
+## How Analytics Work
 
 - Each task stores:
   - Creation timestamp
@@ -125,7 +126,7 @@ No data ever leaves the browser.
 
 ---
 
-## 🔐 Privacy
+## Privacy
 
 - No backend
 - No accounts required
@@ -135,7 +136,7 @@ No data ever leaves the browser.
 
 ---
 
-## 📈 Possible Future Improvements
+## Possible Future Improvements
 
 - Progressive Web App (offline & installable)
 - Cloud sync (Firebase / Supabase)
@@ -146,13 +147,13 @@ No data ever leaves the browser.
 
 ---
 
-## 📜 License
+## License
 
 MIT License — free to use, modify, and distribute.
 
 ---
 
-## 👤 Author
+## Author
 
 **Harman Goraya**
 
